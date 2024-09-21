@@ -1,30 +1,24 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const { Schema, model } = require("mongoose");
+require('./User.model')
+require('./Conversation.model')
 
-const messageSchema = new Schema({
-  content: {
-    type: String,
-    required: true,
-  },
-
+// 1. Define your schema
+let MessageSchema = new Schema({
   sender: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+    ref: 'user',
+    type: Schema.Types.ObjectId
   },
+  message: String,
+  conversationId : {
+    ref: 'conversation',
+    type: Schema.Types.ObjectId
+  } 
+}, {
+  timestamps: true
+})
 
-  recipient: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
+// 2. Define your model
+let MessageModel = model('message', MessageSchema)
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const Message = model("Message", messageSchema);
-
-module.exports = Message;
+// 3. Export your Model with 'module.exports'
+module.exports = MessageModel;

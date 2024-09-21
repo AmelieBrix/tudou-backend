@@ -80,10 +80,11 @@ router.post('/login', (req, res, next) => {
 
       if (passwordCorrect) {
         // Deconstruct the user object to omit the password
-        const { _id, email, name } = foundUser;
+        const { _id, email, username } = foundUser;
+        console.log('this is the username', username)
         
         // Create an object that will be set as the token payload
-        const payload = { _id, email, name };
+        const payload = { _id, email, username };
  
         const authToken = jwt.sign( 
           payload,
@@ -112,5 +113,11 @@ router.get('/verify', isAuthenticated, (req, res, next) => {
     res.status(200).json(req.payload);
   });
    
-// To DO: Logout functionality
+// : Logout functionality
+
+router.post('/logout', isAuthenticated, (req, res, next) => {
+  // You can simply send a success response, as logging out is handled client-side
+  res.status(200).json({ message: "Logout successful" });
+});
+
 module.exports = router;

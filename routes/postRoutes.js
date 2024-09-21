@@ -1,7 +1,10 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
-const Post = require('../models/Post.model');  // Assuming you have a Post model
-const { isAuthenticated } = require('../middleware/jwt.middleware');  // Assuming you have this middleware
+const Post = require('../models/Post.model');  
+const { isAuthenticated } = require('../middleware/jwt.middleware');  
+const Comment = require('../models/Comment.model')
+
 
 // Create a new post 
 router.post('/createpost', isAuthenticated,  (req, res) => {
@@ -34,7 +37,7 @@ router.get('/', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Failed to retrieve posts', error: err.message }));
 });
 */
-router.get('/', (req, res) => {
+/*router.get('/', (req, res) => {
     // Extract query parameters from req.query
     const filter = { ...req.query };  // This will dynamically copy all query parameters into the filter
   
@@ -43,7 +46,22 @@ router.get('/', (req, res) => {
       .then(posts => res.json(posts))  // Return the filtered or full list of posts
       .catch(err => res.status(500).json({ message: 'Failed to retrieve posts', error: err.message }));
   });
+  */
+
+  router.get('/', (req, res) => {
+    const category = req.query.category;
   
+    Post.find({ category })
+      .populate('author', 'username profilePicture')  // Populate author details
+      .then(posts => {
+        if (!posts.length) {
+          return res.status(404).json({ message: 'No posts found' });
+        }
+        res.json(posts);
+      })
+      .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
+  });
+
 
 router.get('/:id', (req, res) => {
   Post.findById(req.params.id)
@@ -64,7 +82,6 @@ router.put('/edit/:id', isAuthenticated, (req, res) => {
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
       }
-
 
       if (post.author.toString() !== req.payload._id) {
         return res.status(403).json({ message: 'You are not authorized to edit this post' });
@@ -101,6 +118,94 @@ router.delete('/delete/:id', isAuthenticated, (req, res) => {
     .catch(err => res.status(500).json({ message: 'Failed to delete post', error: err.message }));
 });
 
+router.post('/:id/createComments', isAuthenticated, (req, res) => {
+  const { content } = req.body;
+  const postId = req.params.id;
+  const userId = req.payload._id;
+
+  // Check if postId is a valid MongoDB ObjectId
+  if (!mongoose.isValidObjectId(postId)) {
+    return res.status(400).json({ message: 'Invalid post ID format' });
+  }
+
+  const newComment = new Comment({
+    content,
+    user: userId,
+    post: postId,  // Since we checked the validity, use the original postId
+  });
+
+  newComment
+    .save()
+    .then(savedComment => {
+      return Post.findById(postId).then(post => {
+        if (!post) {
+          return res.status(404).json({ message: 'Post not found' });
+        }
+
+        post.comments.push(savedComment._id);
+        return post.save();
+      });
+    })
+    .then(() => {
+      res.status(201).json({ message: 'Comment added successfully', comment: newComment });
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Error adding comment', error: error.message });
+    });
+});
+
+router.get('/:id/comments', (req, res) => {
+  const postId = req.params.id;  
+
+  // Find the post by ID and populate the comments
+  Post.findById(postId)
+    .populate({
+      path: 'comments',
+      populate: {
+        path: 'user',  // Populate the user information for each comment
+        select: 'username profilePicture',  // Select only necessary fields from the user
+      }
+    })
+    .then(post => {
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+
+      // Return the comments for the post
+      res.json(post.comments);
+    })
+    .catch(err => {
+      res.status(500).json({ message: 'Failed to retrieve comments', error: err.message });
+    });
+});
+
+// Delete a comment
+router.delete('/comments/:commentId', isAuthenticated, (req, res) => {
+  const commentId = req.params.commentId;
+  const userId = req.payload._id;
+
+  Comment.findById(commentId)
+    .populate('user')
+    .then(comment => {
+      if (!comment) {
+        return res.status(404).json({ message: 'Comment not found' });
+      }
+
+      if (comment.user._id.toString() !== userId.toString()) {
+        return res.status(403).json({ message: 'You are not authorized to delete this comment' });
+      }
+
+      return Comment.findByIdAndDelete(commentId).then(() => {
+        return Post.findByIdAndUpdate(comment.post, { $pull: { comments: commentId } });
+      });
+    })
+    .then(() => {
+      res.json({ message: 'Comment deleted successfully' });
+    })
+    .catch(error => {
+      res.status(500).json({ message: 'Error deleting comment', error: error.message });
+    });
+});
 
 router.post('/:id/like', isAuthenticated, (req, res) => {
     Post.findById(req.params.id)
@@ -131,7 +236,7 @@ router.post('/:id/like', isAuthenticated, (req, res) => {
           return res.status(404).json({ message: 'Post not found' });
         }
   
-        // Check if user already liked the post
+        // checkiing if user already liked the post
         if (!post.likes.includes(req.payload._id)) {
           return res.status(400).json({ message: 'You havent liked this post yet' });
         }
