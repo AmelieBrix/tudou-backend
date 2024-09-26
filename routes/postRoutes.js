@@ -52,7 +52,7 @@ router.get('/', (req, res) => {
     const category = req.query.category;
   
     Post.find({ category })
-      .populate('author', 'username profilePicture')  // Populate author details
+      .populate('author', 'username profilePicture')  
       .then(posts => {
         if (!posts.length) {
           return res.status(404).json({ message: 'No posts found' });
@@ -62,7 +62,7 @@ router.get('/', (req, res) => {
       .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
   });
 
-
+/*
 router.get('/:id', (req, res) => {
   Post.findById(req.params.id)
     .populate('author', 'username profilePicture')
@@ -71,6 +71,26 @@ router.get('/:id', (req, res) => {
         return res.status(404).json({ message: 'Post not found' });
       }
       res.json(post);
+    })
+    .catch(err => res.status(500).json({ message: 'Failed to retrieve post', error: err.message }));
+});
+*/
+
+router.get('/:id', (req, res) => {
+  Post.findById(req.params.id)
+    .populate('author', 'username profilePicture')  // Populate the post author
+    .populate({
+      path: 'comments',
+      populate: {
+        path: 'user',  
+        select: 'username profilePicture',  // Select only necessary fields from the user
+      }
+    })
+    .then(post => {
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+      res.json(post); 
     })
     .catch(err => res.status(500).json({ message: 'Failed to retrieve post', error: err.message }));
 });
@@ -131,21 +151,19 @@ router.post('/:id/createComments', isAuthenticated, (req, res) => {
   const newComment = new Comment({
     content,
     user: userId,
-    post: postId,  // Since we checked the validity, use the original postId
+    post: postId, 
   });
 
   newComment
     .save()
     .then(savedComment => {
-      return Post.findById(postId).then(post => {
-        if (!post) {
-          return res.status(404).json({ message: 'Post not found' });
-        }
-
-        post.comments.push(savedComment._id);
-        return post.save();
-      });
+      return Post.findByIdAndUpdate(
+        postId,
+        { $push: { comments: savedComment._id } }, // Add the comment to the post's comments array
+        { new: true }  // Return the updated post
+      ).then(() => savedComment);  // Return the saved comment after updating the post
     })
+    .then(savedComment => savedComment.populate('user', 'username profilePicture'))
     .then(() => {
       res.status(201).json({ message: 'Comment added successfully', comment: newComment });
     })

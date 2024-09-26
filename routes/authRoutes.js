@@ -6,7 +6,6 @@ const User = require('../models/User.model');
 const {isAuthenticated} = require('../middleware/jwt.middleware')
 const router= express.Router();
 
-// POST /auth/signup
 router.post('/signup', async (req, res) => {
   const {first_Name, last_Name, username, email, password} = req.body;
 
@@ -112,8 +111,6 @@ router.get('/verify', isAuthenticated, (req, res, next) => {
 // previously set as the token payload
     res.status(200).json(req.payload);
   });
-   
-// : Logout functionality
 
 router.post('/logout', isAuthenticated, (req, res, next) => {
   // You can simply send a success response, as logging out is handled client-side
@@ -121,3 +118,4 @@ router.post('/logout', isAuthenticated, (req, res, next) => {
 });
 
 module.exports = router;
+
