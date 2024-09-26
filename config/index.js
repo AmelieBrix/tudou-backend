@@ -23,7 +23,7 @@ module.exports = (app) => {
   // controls a very specific header to pass headers from the frontend
   app.use(
     cors({
-      //credentials: true,
+      credentials: true,
       origin: ["http://localhost:5173", FRONTEND_URL]
     })
   );
