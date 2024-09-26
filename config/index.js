@@ -23,14 +23,8 @@ module.exports = (app) => {
   // controls a very specific header to pass headers from the frontend
   app.use(
     cors({
-      origin: [FRONTEND_URL]
-    })
-  );
-
-  app.use(
-    cors({
       credentials: true,
-      origin: ["http://localhost:5173", `${process.env.ORIGIN}`]
+      origin: ["http://localhost:5173", FRONTEND_URL]
     })
   );
 
