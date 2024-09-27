@@ -5,8 +5,6 @@ const Post = require('../models/Post.model');
 const { isAuthenticated } = require('../middleware/jwt.middleware');  
 const Comment = require('../models/Comment.model')
 
-
-// Create a new post 
 router.post('/createpost', isAuthenticated,  (req, res) => {
     console.log("Payload:", req.payload);  
 
@@ -29,24 +27,6 @@ router.post('/createpost', isAuthenticated,  (req, res) => {
     .then(savedPost => res.status(201).json(savedPost))
     .catch(err => res.status(500).json({ message: 'Failed to create post', error: err.message }));
 });
-/*
-router.get('/', (req, res) => {
-  Post.find()
-    .populate('author', 'username profilePicture')
-    .then(posts => res.json(posts))
-    .catch(err => res.status(500).json({ message: 'Failed to retrieve posts', error: err.message }));
-});
-*/
-/*router.get('/', (req, res) => {
-    // Extract query parameters from req.query
-    const filter = { ...req.query };  // This will dynamically copy all query parameters into the filter
-  
-    Post.find(filter)  // Use the filter object to query the database
-      .populate('author', 'username profilePicture')  // Populate author details
-      .then(posts => res.json(posts))  // Return the filtered or full list of posts
-      .catch(err => res.status(500).json({ message: 'Failed to retrieve posts', error: err.message }));
-  });
-  */
 
   router.get('/', (req, res) => {
     const category = req.query.category;
@@ -61,20 +41,6 @@ router.get('/', (req, res) => {
       })
       .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
   });
-
-/*
-router.get('/:id', (req, res) => {
-  Post.findById(req.params.id)
-    .populate('author', 'username profilePicture')
-    .then(post => {
-      if (!post) {
-        return res.status(404).json({ message: 'Post not found' });
-      }
-      res.json(post);
-    })
-    .catch(err => res.status(500).json({ message: 'Failed to retrieve post', error: err.message }));
-});
-*/
 
 router.get('/:id', (req, res) => {
   Post.findById(req.params.id)
@@ -180,8 +146,8 @@ router.get('/:id/comments', (req, res) => {
     .populate({
       path: 'comments',
       populate: {
-        path: 'user',  // Populate the user information for each comment
-        select: 'username profilePicture',  // Select only necessary fields from the user
+        path: 'user',  //  user information for each comment
+        select: 'username profilePicture',  // Select only the necessary fields from the user
       }
     })
     .then(post => {
@@ -232,12 +198,12 @@ router.post('/:id/like', isAuthenticated, (req, res) => {
           return res.status(404).json({ message: 'Post not found' });
         }
   
-        // Check if user already liked the post
+        // Checking here if user already liked the post
         if (post.likes.includes(req.payload._id)) {
           return res.status(400).json({ message: 'You already liked this post' });
         }
   
-        // Add user's ID to the likes array
+        // Adding user's ID to the likes array
         post.likes.push(req.payload._id);
   
         return post.save();
@@ -246,7 +212,7 @@ router.post('/:id/like', isAuthenticated, (req, res) => {
       .catch(err => res.status(500).json({ message: 'Failed to like post', error: err.message }));
   });
   
-  // Unlike a post
+  // unliking a post
   router.post('/:id/unlike', isAuthenticated, (req, res) => {
     Post.findById(req.params.id)
       .then(post => {

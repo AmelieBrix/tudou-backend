@@ -2,7 +2,7 @@ const router = require("express").Router();
 const Conversation = require('../models/Conversation.model')
 const Message = require('../models/Message.model')
 
-// A route to return the converstaion id between two participants if it already exists
+// this route returns the converstaion id between two participants if it already exists
 // or create a new converstaion, when users chat for the first time
 router.post('/chat', (req, res, next) => {
     //The user will send an array of participant ids in the chat (usually just two)

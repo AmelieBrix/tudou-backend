@@ -10,7 +10,6 @@ require("./config/index")(app);
 
 const authRouter = require("./routes/authRoutes");       
 app.use("/auth", authRouter);
-// --für später
 
 const postRoutes = require('./routes/postRoutes'); 
 app.use("/posts", postRoutes);

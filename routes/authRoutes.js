@@ -113,7 +113,6 @@ router.get('/verify', isAuthenticated, (req, res, next) => {
   });
 
 router.post('/logout', isAuthenticated, (req, res, next) => {
-  // You can simply send a success response, as logging out is handled client-side
   res.status(200).json({ message: "Logout successful" });
 });
 
