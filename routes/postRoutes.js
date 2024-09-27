@@ -28,19 +28,17 @@ router.post('/createpost', isAuthenticated,  (req, res) => {
     .catch(err => res.status(500).json({ message: 'Failed to create post', error: err.message }));
 });
 
-  router.get('/', (req, res) => {
-    const category = req.query.category;
-  
-    Post.find({ category })
-      .populate('author', 'username profilePicture')  
-      .then(posts => {
-        if (!posts.length) {
-          return res.status(404).json({ message: 'No posts found' });
-        }
-        res.json(posts);
-      })
-      .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
-  });
+router.get('/', (req, res) => {
+  const category = req.query.category;
+
+  Post.find({ category })
+    .populate('author', 'username profilePicture')  
+    .then(posts => {
+      // Return a success status with an empty array if no posts are found
+      res.status(200).json(posts);
+    })
+    .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
+});
 
 router.get('/:id', (req, res) => {
   Post.findById(req.params.id)
