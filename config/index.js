@@ -21,15 +21,7 @@ module.exports = (app) => {
       allowedHeaders: ["Content-Type", "Authorization"]
     })
   );
-  // Manually handle preflight OPTIONS requests for all routes
-  app.options("*", (req, res) => {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);  // Dynamically allow the requesting origin
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.sendStatus(204);  // Send 204 No Content status for preflight checks
-  });
-  
+
   app.use(logger("dev"));
 
   app.use(express.json());
