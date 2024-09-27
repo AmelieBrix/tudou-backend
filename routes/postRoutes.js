@@ -40,6 +40,29 @@ router.get('/', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
 });
 
+
+
+// Get all posts by a specific author
+router.get('/author/:authorId', (req, res) => {
+  const { authorId } = req.params;
+
+  // Convert `authorId` to ObjectId if necessary and query posts by `author`
+  try {
+    const authorObjectId = new mongoose.Types.ObjectId(authorId);
+    Post.find({ author: authorObjectId })
+      .populate('author', 'username profilePicture') // Populate author details if necessary
+      .then(posts => {
+        if (posts.length === 0) {
+          return res.status(404).json({ message: 'No posts found for this author' });
+        }
+        res.status(200).json(posts);
+      })
+      .catch(err => res.status(500).json({ message: 'Failed to fetch posts', error: err.message }));
+  } catch (err) {
+    return res.status(400).json({ message: 'Invalid author ID format' });
+  }
+});
+
 router.get('/:id', (req, res) => {
   Post.findById(req.params.id)
     .populate('author', 'username profilePicture')  // Populate the post author
