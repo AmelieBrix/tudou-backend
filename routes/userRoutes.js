@@ -87,7 +87,7 @@ router.put('/:userId/edit', isAuthenticated, (req, res) => {
 
 
 router.delete('/:userId/delete', isAuthenticated, (req, res) => {
-  if (req.params.userId !== req.payload.id) {
+  if (req.params.userId !== req.payload._id) {
     return res.status(403).json({ message: 'You are not authorized to delete this profile' });
   }
 

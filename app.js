@@ -8,6 +8,10 @@ app.use(express.json());
  
 require("./config/index")(app);
 
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+});
+
 const authRouter = require("./routes/authRoutes");       
 app.use("/auth", authRouter);
 
@@ -18,7 +22,7 @@ const userRouter = require('./routes/userRoutes');
 app.use("/users", userRouter);
 
 const chatRoutes = require('./routes/chat.Routes');
-app.use("/", chatRoutes); //check if it works, when frontend part of package is implemented
+app.use("/chat", chatRoutes); //check if it works, when frontend part of package is implemented
 
 app.post('/message', (req, res) => {
     const { message } = req.body;
