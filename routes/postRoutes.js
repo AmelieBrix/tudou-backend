@@ -47,11 +47,12 @@ router.get('/author/:authorId', (req, res) => {
   const { authorId } = req.params;
 
   // Convert `authorId` to ObjectId if necessary and query posts by `author`
-  try {
+  /*try {
     const authorObjectId = new mongoose.Types.ObjectId(authorId);
     Post.find({ author: authorObjectId })
       .populate('author', 'username profilePicture') // Populate author details if necessary
       .then(posts => {
+        console.log('posts',posts)
         if (posts.length === 0) {
           return res.status(404).json({ message: 'No posts found for this author' });
         }
@@ -61,6 +62,25 @@ router.get('/author/:authorId', (req, res) => {
   } catch (err) {
     return res.status(400).json({ message: 'Invalid author ID format' });
   }
+});*/
+
+Post.find({ author: authorId })
+    .populate('author', 'username profilePicture') // Populate author details if necessary
+    .then(posts => {
+      console.log('posts', posts);
+
+      // Check if posts array is empty
+      if (posts === 0) {
+        return res.status(404).json({ message: 'No posts found for this author' });
+      }
+
+      // Otherwise, return the posts
+      res.status(200).json(posts);
+    })
+    .catch(err => {
+      console.error('Failed to fetch posts:', err);
+      return res.status(500).json({ message: 'Failed to fetch posts', error: err.message });
+    });
 });
 
 router.get('/:id', (req, res) => {
