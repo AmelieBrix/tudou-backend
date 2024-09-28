@@ -79,11 +79,11 @@ router.post('/login', (req, res, next) => {
 
       if (passwordCorrect) {
         // Deconstruct the user object to omit the password
-        const { _id, email, username } = foundUser;
+        const { _id, email, username, first_Name, last_Name } = foundUser;
         console.log('this is the username', username)
         
         // Create an object that will be set as the token payload
-        const payload = { _id, email, username };
+        const payload = { _id, email, username, first_Name, last_Name };
  
         const authToken = jwt.sign( 
           payload,
@@ -103,18 +103,34 @@ router.post('/login', (req, res, next) => {
 
 router.get('/verify', isAuthenticated, (req, res, next) => {   
  
-// If JWT token is valid the payload gets decoded by the
-// isAuthenticated middleware and made available on `req.payload`
+
     console.log(`req.payload`, req.payload);
    
-// Send back the object with user data
-// previously set as the token payload
-    res.status(200).json(req.payload);
-  });
+
+    User.findById(req.payload._id)
+    .then(user => {
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Make sure first_Name and last_Name are included in the response payload
+        res.status(200).json({
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            first_Name: user.first_Name,
+            last_Name: user.last_Name
+        });
+    })
+    .catch(err => res.status(500).json({ message: 'Internal Server Error' }));
+});
 
 router.post('/logout', isAuthenticated, (req, res, next) => {
+  // You can simply send a success response, as logging out is handled client-side
   res.status(200).json({ message: "Logout successful" });
 });
 
 module.exports = router;
+
+
 

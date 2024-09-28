@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../models/User.model');
 const { isAuthenticated } = require('../middleware/jwt.middleware');  // Assuming you have this middleware
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+
 
 router.get('/:userId', isAuthenticated, (req, res) => {
   // Use the username from the URL parameters to find the user
@@ -41,7 +43,10 @@ router.put('/:userId/edit', isAuthenticated, (req, res) => {
         // Hash the new password if the current password is correct
         return bcrypt.hash(newPassword, 10).then(hashedPassword => {
           user.passwordHash = hashedPassword;
-          return updateUserFields(user);
+          return updateUserFields(user, req.body);
+        }) .catch(err => {
+          console.error("Error hashing the new password:", err);
+          return res.status(500).json({ message: 'Error hashing the new password', error: err.message });
         });
       } else {
         return updateUserFields(user, req.body);  // Update other fields if password is not changed
