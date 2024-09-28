@@ -5,7 +5,7 @@ const Post = require('../models/Post.model');
 const { isAuthenticated } = require('../middleware/jwt.middleware');  
 const Comment = require('../models/Comment.model')
 
-router.post('/createpost', isAuthenticated,  (req, res) => {
+router.post('/create', isAuthenticated,  (req, res) => {
     console.log("Payload:", req.payload);  
 
     if (!req.payload || !req.payload._id) {
@@ -82,7 +82,7 @@ router.get('/:id', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Failed to retrieve post', error: err.message }));
 });
 
-router.put('/edit/:id', isAuthenticated, (req, res) => {
+router.put('/:id/edit', isAuthenticated, (req, res) => {
   Post.findById(req.params.id)
     .then(post => {
         console.log(post)
@@ -107,7 +107,7 @@ router.put('/edit/:id', isAuthenticated, (req, res) => {
 });
 
 // Delete a post )
-router.delete('/delete/:id', isAuthenticated, (req, res) => {
+router.delete('/:id/delete', isAuthenticated, (req, res) => {
   Post.findById(req.params.id)
     .then(post => {
       if (!post) {
