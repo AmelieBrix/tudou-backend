@@ -1,6 +1,7 @@
 require("dotenv").config();
 require("./db");
 
+
 const express = require("express");
 const app = express();
 
@@ -33,5 +34,11 @@ app.post('/message', (req, res) => {
     // Respond back to the frontend
     res.status(200).json({ message: 'Message received successfully' });
   });
+  console.log('Cloudinary Name:', process.env.CLOUDINARY_NAME);
+  console.log('Cloudinary Key:', process.env.CLOUDINARY_KEY);
+  console.log('Cloudinary Secret:', process.env.CLOUDINARY_SECRET);
+
+  const path = require('path');
+  app.use('./public', express.static(path.join(__dirname, 'public')));  
 
 module.exports = app;

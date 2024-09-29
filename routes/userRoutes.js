@@ -4,6 +4,8 @@ const User = require('../models/User.model');
 const { isAuthenticated } = require('../middleware/jwt.middleware');  // Assuming you have this middleware
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const fileUploader = require('../config/cloudinary.config'); // Cloudinary config
+const defaultProfilePicture = '../public/images/default.png'; 
 
 
 router.get('/:userId', isAuthenticated, (req, res) => {
@@ -14,12 +16,16 @@ router.get('/:userId', isAuthenticated, (req, res) => {
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
+      if (!user.profilePicture) {
+        user.profilePicture = defaultProfilePicture;
+      }
+
       res.json(user);
     })
     .catch(err => res.status(500).json({ message: 'Error fetching profile', error: err.message }));
 });
 
-router.put('/:userId/edit', isAuthenticated, (req, res) => {
+router.put('/:userId/edit', isAuthenticated, fileUploader.single('profilePicture'), (req, res) => {
   const { first_Name, last_Name, email, username, currentPassword, newPassword } = req.body;
   console.log("checking body:", req.body);
   console.log("User payload from token:", req.payload);
@@ -53,13 +59,19 @@ router.put('/:userId/edit', isAuthenticated, (req, res) => {
       }
     })
     .then(updatedUser => {
-      
-      // Create an object that will be set as the token payload
-      // Always generate a new JWT token with the updated user info
+      // Check if a new profile picture was uploaded, else use the default one if not set
+      if (req.file) {
+        updatedUser.profilePicture = req.file.path; // Use Cloudinary URL from req.file.path
+      } else if (!updatedUser.profilePicture) {
+        updatedUser.profilePicture = defaultProfilePicture; // Use default profile picture
+      }
 
-      const payload = { _id: updatedUser._id, email: updatedUser.email, username: updatedUser.username,};
+      return updatedUser.save();
+    })
+    .then(updatedUser => {
+      const payload = { _id: updatedUser._id, email: updatedUser.email, username: updatedUser.username };
       const authToken = jwt.sign(payload, process.env.JWT_SECRET, { algorithm: 'HS256', expiresIn: '2h' });
-      // Return the updated user data along with the new token
+
       res.json({ message: 'Profile updated successfully', updatedUser, authToken });
     })
     .catch(err => res.status(500).json({ message: 'Failed to update profile', error: err.message }));

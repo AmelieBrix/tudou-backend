@@ -2,11 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const User = require('../models/User.model');
+const fileUploader = require('../config/cloudinary.config'); // Import cloudinary config
 
 const {isAuthenticated} = require('../middleware/jwt.middleware')
 const router= express.Router();
 
-router.post('/signup', async (req, res) => {
+router.post('/signup', fileUploader.single('profilePicture'), async (req, res) => {
   const {first_Name, last_Name, username, email, password} = req.body;
 
   console.log(req.body);
@@ -41,13 +42,25 @@ const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
     const passwordHash = bcrypt.hashSync(password, salt);
     console.log(passwordHash);
 
-    return User.create({ email, passwordHash: passwordHash, username, first_Name,last_Name });
+    let profilePictureUrl = '../public/images/default.jpg';
+
+    if (req.file) {
+      profilePictureUrl = req.file.path; // Cloudinary stores the URL in req.file.path
+    }
+
+    return User.create({ 
+      email, 
+      passwordHash: passwordHash, 
+      username, 
+      first_Name,
+      last_Name,
+    profilePicture: profilePictureUrl });
     })
     .then((createdUser) => {
     
-      const { email, username, first_Name,last_Name, _id } = createdUser;
+      const { email, username, first_Name,last_Name, _id, profilePicture  } = createdUser;
 
-      const user = { email, username, first_Name,last_Name, _id };
+      const user = { email, username, first_Name,last_Name, _id, profilePicture  };
 
       res.status(201).json({ user: user });
     })

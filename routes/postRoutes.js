@@ -4,21 +4,23 @@ const router = express.Router();
 const Post = require('../models/Post.model');  
 const { isAuthenticated } = require('../middleware/jwt.middleware');  
 const Comment = require('../models/Comment.model')
+const fileUploader = require('../config/cloudinary.config');
 
-router.post('/create', isAuthenticated,  (req, res) => {
+
+router.post('/create', isAuthenticated, fileUploader.single('postImage'),  (req, res) => {
     console.log("Payload:", req.payload);  
 
     if (!req.payload || !req.payload._id) {
       return res.status(401).json({ message: 'Unauthorized: No user ID found in token' });
     }
   
-  const { title, content, category, imageUrl } = req.body;
+  const { title, content, category } = req.body;
   console.log("HOLA");
   const newPost = new Post({
     title,
     content,
     category,
-    imageUrl,
+    imageUrl: req.file ? req.file.path : null,
     author: req.payload._id,  
   });
 
@@ -102,7 +104,7 @@ router.get('/:id', (req, res) => {
     .catch(err => res.status(500).json({ message: 'Failed to retrieve post', error: err.message }));
 });
 
-router.put('/:id/edit', isAuthenticated, (req, res) => {
+router.put('/:id/edit', isAuthenticated, fileUploader.single('postImage'), (req, res) => {
   Post.findById(req.params.id)
     .then(post => {
         console.log(post)
@@ -115,10 +117,13 @@ router.put('/:id/edit', isAuthenticated, (req, res) => {
       }
      
       const { title, content, category, imageUrl } = req.body;
-      post.title = title;
-      post.content = content;
-      post.category = category;
-      post.imageUrl = imageUrl;
+      post.title = title || post.title;
+      post.content = content || post.content;
+      post.category = category || post.category;
+
+      if (req.file) {
+        post.imageUrl = req.file.path;
+      }
 
       return post.save();
     })
