@@ -22,7 +22,7 @@ const userRouter = require('./routes/userRoutes');
 app.use("/users", userRouter);
 
 const chatRoutes = require('./routes/chat.Routes');
-app.use("/chat", chatRoutes); //check if it works, when frontend part of package is implemented
+app.use("/", chatRoutes); //check if it works, when frontend part of package is implemented
 
 app.post('/message', (req, res) => {
     const { message } = req.body;
