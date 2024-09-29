@@ -20,7 +20,7 @@ router.post('/create', isAuthenticated, fileUploader.single('postImage'),  (req,
     title,
     content,
     category,
-    imageUrl: req.file ? req.file.path : null,
+    imageUrl: req.file ? req.file.path : "https://res.cloudinary.com/dfrhg0iqs/image/upload/v1727615596/PostDefault_ua9vkv.png",
     author: req.payload._id,  
   });
 

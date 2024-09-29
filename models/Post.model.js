@@ -52,6 +52,7 @@ const postSchema = new Schema({
   
     imageUrl: {
       type: String,
+
     },
     
   }, { timestamps: true }); // Enabled timestamps for createdAt and updatedAt

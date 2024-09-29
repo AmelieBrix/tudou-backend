@@ -42,7 +42,7 @@ const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
     const passwordHash = bcrypt.hashSync(password, salt);
     console.log(passwordHash);
 
-    let profilePictureUrl = '../public/images/default.jpg';
+    let profilePictureUrl = 'https://res.cloudinary.com/dfrhg0iqs/image/upload/v1727612051/defaultImage_qicau9.jpg';
 
     if (req.file) {
       profilePictureUrl = req.file.path; // Cloudinary stores the URL in req.file.path

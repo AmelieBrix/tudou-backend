@@ -5,7 +5,8 @@ const { isAuthenticated } = require('../middleware/jwt.middleware');  // Assumin
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const fileUploader = require('../config/cloudinary.config'); // Cloudinary config
-const defaultProfilePicture = '../public/images/default.png'; 
+const profilePictureUrl = 'https://res.cloudinary.com/dfrhg0iqs/image/upload/v1727612051/defaultImage_qicau9.jpg';
+
 
 
 router.get('/:userId', isAuthenticated, (req, res) => {
@@ -17,7 +18,7 @@ router.get('/:userId', isAuthenticated, (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
       if (!user.profilePicture) {
-        user.profilePicture = defaultProfilePicture;
+        user.profilePicture = profilePictureUrl;
       }
 
       res.json(user);
