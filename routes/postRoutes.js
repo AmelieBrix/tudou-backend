@@ -238,7 +238,12 @@ router.delete('/comments/:commentId', isAuthenticated, (req, res) => {
 });
 
 router.post('/:id/like', isAuthenticated, (req, res) => {
+    console.log("IM HERE IN THE BACKENDDD");
+
     Post.findById(req.params.id)
+      
+        .populate('author', 'username profilePicture')
+    
       .then(post => {
         if (!post) {
           return res.status(404).json({ message: 'Post not found' });
@@ -246,7 +251,10 @@ router.post('/:id/like', isAuthenticated, (req, res) => {
   
         // Checking here if user already liked the post
         if (post.likes.includes(req.payload._id)) {
-          return res.status(400).json({ message: 'You already liked this post' });
+          // Remove user's ID from the likes array
+          post.likes = post.likes.filter(like => like.toString() !== req.payload._id);
+          return post.save();
+         // return res.status(400).json({ message: 'You already liked this post' });
         }
   
         // Adding user's ID to the likes array
@@ -258,8 +266,8 @@ router.post('/:id/like', isAuthenticated, (req, res) => {
       .catch(err => res.status(500).json({ message: 'Failed to like post', error: err.message }));
   });
   
-  // unliking a post
-  router.post('/:id/unlike', isAuthenticated, (req, res) => {
+  // unliking a post 
+  /*router.post('/:id/unlike', isAuthenticated, (req, res) => {
     Post.findById(req.params.id)
       .then(post => {
         if (!post) {
@@ -278,7 +286,7 @@ router.post('/:id/like', isAuthenticated, (req, res) => {
       })
       .then(updatedPost => res.json(updatedPost))
       .catch(err => res.status(500).json({ message: 'Failed to unlike post', error: err.message }));
-  });
+  });*/
 
 
 module.exports = router;
