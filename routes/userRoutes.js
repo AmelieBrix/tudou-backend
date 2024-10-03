@@ -62,7 +62,7 @@ router.put('/:userId/edit', isAuthenticated, fileUploader.single('profilePicture
     .then(updatedUser => {
       // Check if a new profile picture was uploaded, else use the default one if not set
       if (req.file) {
-        updatedUser.profilePicture = req.file.path; // Use Cloudinary URL from req.file.path
+        updatedUser.profilePicture = req.file.path; 
       } else if (!updatedUser.profilePicture) {
         updatedUser.profilePicture = defaultProfilePicture; // Use default profile picture
       }
